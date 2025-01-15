@@ -1,4 +1,0 @@
-[console_scripts]
-crypto-stream = crypto_stream.cli:main
-run-market-streamer = crypto_stream.market_data.streaming.kafka_streamer:main
-run-recorder-consumer = crypto_stream.market_data.processing.sampling_recorder_consumer:main
