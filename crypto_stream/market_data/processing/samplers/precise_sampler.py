@@ -239,6 +239,11 @@ class SampledDataManager:
             import traceback
             print(traceback.format_exc())
     
+    def get_latest_minute_sample_channel_name(self, exchange, data_type, symbol):
+        """Get Redis pub/sub channel name for sample updates"""
+        return f"latest_samples:{exchange}:{data_type}:{symbol}"
+
+    
     def save_sample(self, exchange, data_type, symbol, sampled_data, minute):
         """Save the sample to Redis and disk"""
         try:
@@ -249,7 +254,11 @@ class SampledDataManager:
             
             # Store latest sample (simpler than zadd)
             self.redis.set(sample_key, json.dumps(sampled_data))
-            
+
+            # Publish update
+            channel = self.get_latest_minute_sample_channel_name(exchange, data_type, symbol)
+            self.redis.publish(channel, json.dumps(sampled_data))
+
             # If you want to keep a window of recent samples, use a list
             window_key = f"{sample_key}:window"
             self.redis.rpush(window_key, json.dumps(sampled_data))
