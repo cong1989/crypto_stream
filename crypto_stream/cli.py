@@ -8,6 +8,30 @@ from multiprocessing import Process
 
 KAFKA_HOME = os.environ.get('KAFKA_HOME', '/opt/kafka')
 
+def wait_for_zookeeper():
+    """Wait for Zookeeper to be ready"""
+    retries = 30
+    while retries > 0:
+        try:
+            subprocess.run(['nc', '-z', 'localhost', '2181'], check=True)
+            return True
+        except:
+            retries -= 1
+            time.sleep(1)
+    return False
+
+def wait_for_kafka():
+    """Wait for Kafka to be ready"""
+    retries = 30
+    while retries > 0:
+        try:
+            subprocess.run(['nc', '-z', 'localhost', '9092'], check=True)
+            return True
+        except:
+            retries -= 1
+            time.sleep(1)
+    return False
+
 def check_prerequisites():
     """Check all prerequisites are met"""
     if not os.environ.get('TM_API_KEY'):
@@ -63,25 +87,35 @@ def start():
                 'tardisdev/tardis-machine'
             ]
             subprocess.run(tardis_cmd, check=True)
-            time.sleep(5)
+            time.sleep(7)
 
         # Start Zookeeper if not running
-        zk_process = subprocess.run(['pgrep', '-f', 'zookeeper'], capture_output=True)
-        if zk_process.returncode != 0:
+        if subprocess.run(['pgrep', '-f', 'zookeeper'], capture_output=True).returncode != 0:
             click.echo("Starting Zookeeper...")
             zk_cmd = [os.path.join(KAFKA_HOME, 'bin', 'zookeeper-server-start.sh'),
                      os.path.join(KAFKA_HOME, 'config', 'zookeeper.properties')]
             subprocess.Popen(zk_cmd)
-            time.sleep(10)
+            
+            if not wait_for_zookeeper():
+                click.echo("Error: Zookeeper failed to start")
+                sys.exit(1)
         
-        # Start Kafka if not running
-        kafka_process = subprocess.run(['pgrep', '-f', 'kafka.Kafka'], capture_output=True)
-        if kafka_process.returncode != 0:
+        # Clean up old Kafka data if needed
+        kafka_logs = os.path.join(KAFKA_HOME, 'logs')
+        if os.path.exists(kafka_logs):
+            click.echo("Cleaning old Kafka data...")
+            subprocess.run(['rm', '-rf', kafka_logs])
+        
+        # Start Kafka
+        if subprocess.run(['pgrep', '-f', 'kafka.Kafka'], capture_output=True).returncode != 0:
             click.echo("Starting Kafka...")
             kafka_cmd = [os.path.join(KAFKA_HOME, 'bin', 'kafka-server-start.sh'),
                         os.path.join(KAFKA_HOME, 'config', 'server.properties')]
             subprocess.Popen(kafka_cmd)
-            time.sleep(7)
+            
+            if not wait_for_kafka():
+                click.echo("Error: Kafka failed to start")
+                sys.exit(1)
         
         # Start streamer and consumer
         click.echo("Starting data streamer...")

@@ -23,7 +23,7 @@ def format_quote_data(data):
         'timestamps': {
             'event_time': data.get('timestamp'),
             'local_time': data.get('localTimestamp'),
-            'receive_time': pd.Timestamp.now(tz='UTC').strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+            'receive_time': pd.Timestamp.now(tz='UTC').strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
         }
     }
 

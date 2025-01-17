@@ -13,6 +13,13 @@ stream_options:
       - "ADAUSDT"
     dataTypes:
       - "quote"
+  - exchange: "bitmex"
+    symbols:
+      - "XBTUSD"
+      - "ETHUSD"
+      - "ADAUSD"
+    dataTypes:
+      - "quote"
 
 redis_options:
   redis_tick_cache:
@@ -28,8 +35,9 @@ kafka_options:
   kafka_broker: "localhost:9092"
 
 recording_options:
-  recorder_consumer_dir: '/media/cong1989/Expansion1/work_for_autonomous/crypto_tick_data'
-  precise_sampler_dir: '/media/cong1989/Expansion1/work_for_autonomous/crypto_data_sample'
+  recorder_consumer_dir: '/media/cong1989/Expansion1/work_for_autonomous/crypto_stream_data'
+  precise_sampler_dir: '/media/cong1989/Expansion1/work_for_autonomous/crypto_stream_data'
 
 sampled_data_manager_options:
   max_tick_age: 100
+  number_of_minute_samples_to_keep: 2880
