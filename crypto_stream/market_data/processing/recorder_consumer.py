@@ -29,8 +29,8 @@ class RecorderConsumer:
         try:
             raw_data = json.loads(msg.value().decode("utf-8"))
             tick_data = format_quote_data(raw_data)
-            spreads = calculate_quote_spreads(tick_data)
-            storage_data = prepare_storage_quote_data(tick_data, spreads)
+            #spreads = calculate_quote_spreads(tick_data)
+            storage_data = prepare_storage_quote_data(tick_data)
             self.cache.add_tick(tick_data, storage_data)
         except Exception as e:
             logger.error(f"Error processing message: {e}", exc_info=True)

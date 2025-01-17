@@ -127,10 +127,15 @@ class SampledDataManager:
                 self.create_samples_for_minute(current_minute)
                 self.last_sampled_minute = current_minute
             elif current_minute > self.last_sampled_minute:
+                print('#############################')
                 print(f"New minute detected - sampling needed")
+                print(f'exchange: {exchange}')
+                print(f"trigger time: {tick_timestamp}", pd.Timestamp.now(tz = 'UTC'))
                 print(f"Current minute: {current_minute}")
                 print(f"Last sampled: {self.last_sampled_minute}")
+                print('#############################')
                 self.create_samples_for_minute(current_minute)
+                #print('create_samples_for_minute done', pd.Timestamp.now(tz = 'UTC'))
                 self.last_sampled_minute = current_minute
             else:
                 pass
@@ -274,42 +279,53 @@ class SampledDataManager:
         """Get Redis pub/sub channel name for sample updates"""
         return f"latest_samples:{exchange}:{data_type}:{symbol}"
 
+    def publish_sample(self, exchange, data_type, symbol, sampled_data):
+        """Publish sample updates to various channels"""
+        try:
+            message = {
+                'data': sampled_data,
+                'publish_time': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+            }
+            message_json = json.dumps(message)
+            
+            # Publish to symbol-specific channel
+            symbol_channel = self.get_latest_minute_sample_channel_name(exchange, data_type, symbol)
+            self.redis.publish(symbol_channel, message_json)
+            
+            # Publish to exchange-wide channel
+            exchange_channel = f"latest_samples:{exchange}:{data_type}"
+            self.redis.publish(exchange_channel, message_json)
+            
+        except Exception as e:
+            print(f"Error publishing sample: {e}")
+            import traceback
+            print(traceback.format_exc())
+
     def save_sample(self, exchange, data_type, symbol, sampled_data, minute):
         """Save the sample to Redis and disk"""
         try:
             print(f"\nSaving sample for {symbol} at {minute}")
-
+            
             # Save to Redis
             sample_key = self.get_sample_key(exchange, data_type, symbol)
-
-            # Store latest sample (simpler than zadd)
             self.redis.set(sample_key, json.dumps(sampled_data))
-
-            # Publish update
-            channel = self.get_latest_minute_sample_channel_name(
-                exchange, data_type, symbol
-            )
-            self.redis.publish(channel, json.dumps(sampled_data))
-
-            # If you want to keep a window of recent samples, use a list
+            
+            # Publish updates
+            self.publish_sample(exchange, data_type, symbol, sampled_data)
+            
+            # Save window
             window_key = f"{sample_key}:window"
             self.redis.rpush(window_key, json.dumps(sampled_data))
-
-            # Optionally trim the list to keep only recent history
-            # e.g., keep last 60 minutes of samples
-            self.redis.ltrim(
-                window_key,
-                -self._sampled_redis_options["number_of_minute_samples_to_keep"],
-                -1,
-            )
-
+            self.redis.ltrim(window_key, 
+                            -self._sampled_redis_options["number_of_minute_samples_to_keep"],
+                            -1)
+            
             # Save to disk
             self.save_sample_to_disk(exchange, data_type, symbol, sampled_data)
-
+            
         except Exception as e:
             print(f"Error saving sample: {e}")
             import traceback
-
             print(traceback.format_exc())
 
     def create_samples_for_minute(self, minute):
@@ -318,6 +334,7 @@ class SampledDataManager:
             symbols = self.get_all_symbols(minute)
 
             for exchange, data_type, symbol in symbols:
+                #print(f"\nProcessing symbol: {symbol}", pd.Timestamp.now(tz = 'UTC'))
                 try:
                     last_tick = self.get_last_tick_before_minute(
                         exchange, data_type, symbol, minute

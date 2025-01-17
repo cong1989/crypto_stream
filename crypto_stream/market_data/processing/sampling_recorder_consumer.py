@@ -37,8 +37,8 @@ class SamplingQuoteRecorderConsumer:
         try:
             raw_data = json.loads(msg.value().decode("utf-8"))
             tick_data = format_quote_data(raw_data)
-            spreads = calculate_quote_spreads(tick_data)
-            storage_data = prepare_storage_quote_sampling_data(tick_data, spreads)
+            #spreads = calculate_quote_spreads(tick_data)
+            storage_data = prepare_storage_quote_sampling_data(tick_data)
             self._cache.add_tick(tick_data, storage_data)
         except Exception as e:
             print("sampling_recorder_consumer process_message error:", e)

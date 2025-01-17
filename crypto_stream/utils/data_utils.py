@@ -46,7 +46,7 @@ def prepare_storage_quote_data(tick_data, spreads):
     }
 
 
-def prepare_storage_quote_sampling_data(tick_data, spreads):
+def prepare_storage_quote_sampling_data(tick_data):
     """Prepare flattened data for storage with forward sampling timestamp"""
     try:
         event_time = pd.Timestamp(tick_data["timestamps"]["event_time"])
@@ -64,9 +64,6 @@ def prepare_storage_quote_sampling_data(tick_data, spreads):
             "bid_size": tick_data["pricing"]["best_bid"]["amount"],
             "ask_price": tick_data["pricing"]["best_ask"]["price"],
             "ask_size": tick_data["pricing"]["best_ask"]["amount"],
-            "spread": spreads.get("spread") if spreads else None,
-            "spread_bps": spreads.get("spread_bps") if spreads else None,
-            "mid_price": spreads.get("mid_price") if spreads else None,
         }
     except Exception as e:
         print(f"Error preparing storage data: {e}")
@@ -74,6 +71,7 @@ def prepare_storage_quote_sampling_data(tick_data, spreads):
 
 
 def calculate_quote_spreads(tick_data):
+    return None
     """Calculate market spreads and mid price"""
     best_bid = tick_data["pricing"]["best_bid"]["price"]
     best_ask = tick_data["pricing"]["best_ask"]["price"]
