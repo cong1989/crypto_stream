@@ -7,25 +7,26 @@ def parse_topic(topic: str) -> tuple[str, str]:
         Tuple of (exchange, data_type)
     """
     # Remove prefix 'crypto-ticks-'
-    without_prefix = topic.replace('crypto-ticks-', '')
-    
+    without_prefix = topic.replace("crypto-ticks-", "")
+
     # Split remaining string by '-'
-    parts = without_prefix.split('-')
-    
+    parts = without_prefix.split("-")
+
     # Last part is the data type
     data_type = parts[-1]
-    
+
     # Everything before the data type is the exchange
-    exchange = '-'.join(parts[:-1])
-    
+    exchange = "-".join(parts[:-1])
+
     return exchange, data_type
 
-if __name__ =='__main__':
+
+if __name__ == "__main__":
     topics = [
-        'crypto-ticks-binance-futures-quote',
-        'crypto-ticks-binance-quote', 
-        'crypto-ticks-bitmex-quote',
-        'crypto-ticks-bitmex-trade'
+        "crypto-ticks-binance-futures-quote",
+        "crypto-ticks-binance-quote",
+        "crypto-ticks-bitmex-quote",
+        "crypto-ticks-bitmex-trade",
     ]
 
     for topic in topics:
