@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class RecorderConsumer:
     def __init__(
-        self, data_dir="/media/cong1989/Expansion1/work_for_autonomous/crypto_data"
+        self, data_dir
     ):
         self.data_dir = Path(data_dir)
         self.cache = RedisTickCache()

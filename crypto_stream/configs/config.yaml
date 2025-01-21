@@ -35,8 +35,8 @@ kafka_options:
   kafka_broker: "localhost:9092"
 
 recording_options:
-  recorder_consumer_dir: '/media/cong1989/Expansion1/work_for_autonomous/crypto_stream_data'
-  precise_sampler_dir: '/media/cong1989/Expansion1/work_for_autonomous/crypto_stream_data'
+  recorder_consumer_dir: '/media/cong1989/Expansion/work_for_autonomous/crypto_stream_data'
+  precise_sampler_dir: '/media/cong1989/Expansion/work_for_autonomous/crypto_stream_data'
 
 sampled_data_manager_options:
   max_tick_age: 100

@@ -5,11 +5,22 @@ A package for collecting and sampling cryptocurrency market data using Tardis an
 ## Prerequisites
 
 - Docker
-- Java (for Kafka)
+- Java 17(for Kafka)   conda install -c conda-forge openjdk=17
 - Python 3.8+
 - Kafka installation in `/opt/kafka`
+- redis-server
 
-## Installation
+# build kafka
+wget https://downloads.apache.org/kafka/
+tar -xvzf kafka.tgz
+sudo mv kafka-src /opt/kafka
+cd /opt/kafka
+./gradlew jar -PscalaVersion
+
+
+pip install tardis-dev
+sudo apt update
+sudo apt install redis-server
 
 1. Clone the repository:
 ```bash
